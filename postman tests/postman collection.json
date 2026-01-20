@@ -1,0 +1,332 @@
+{
+  "info": {
+    "_postman_id": "hiring-challenge-collection",
+    "name": "Go Hiring Challenge API",
+    "description": "API collection for testing product catalog and categories endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Catalog",
+      "item": [
+        {
+          "name": "Get All Products (Paginated)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has correct structure', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('products');",
+                  "    pm.expect(jsonData).to.have.property('total');",
+                  "    pm.expect(Array.isArray(jsonData.products)).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('Content-Type is application/json', function () {",
+                  "    pm.response.to.have.header('Content-Type');",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});",
+                  "",
+                  "pm.test('Products have required fields', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.products.length > 0) {",
+                  "        var product = jsonData.products[0];",
+                  "        pm.expect(product).to.have.property('code');",
+                  "        pm.expect(product).to.have.property('price');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalog",
+              "host": ["{{base_url}}"],
+              "path": ["catalog"]
+            },
+            "description": "Retrieve all products with default pagination (offset=0, limit=10)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Products with Custom Pagination",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Pagination parameters are respected', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.products.length).to.be.at.most(5);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalog?offset=0&limit=5",
+              "host": ["{{base_url}}"],
+              "path": ["catalog"],
+              "query": [
+                {
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Retrieve products with custom offset and limit parameters"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product by Code",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has product details', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('code');",
+                  "    pm.expect(jsonData).to.have.property('price');",
+                  "    pm.expect(jsonData).to.have.property('category');",
+                  "    pm.expect(jsonData).to.have.property('variants');",
+                  "});",
+                  "",
+                  "pm.test('Category has required fields', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.category).to.have.property('code');",
+                  "    pm.expect(jsonData.category).to.have.property('name');",
+                  "});",
+                  "",
+                  "pm.test('Variants array exists', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(Array.isArray(jsonData.variants)).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalog/{{product_code}}",
+              "host": ["{{base_url}}"],
+              "path": ["catalog", "{{product_code}}"]
+            },
+            "description": "Retrieve detailed information for a specific product by its code"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product with Invalid Code (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Error message is present', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.message).to.include('not found');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalog/INVALID_CODE",
+              "host": ["{{base_url}}"],
+              "path": ["catalog", "INVALID_CODE"]
+            },
+            "description": "Test 404 error when requesting a non-existent product"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has categories array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('categories');",
+                  "    pm.expect(Array.isArray(jsonData.categories)).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('Categories have required fields', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.categories.length > 0) {",
+                  "        var category = jsonData.categories[0];",
+                  "        pm.expect(category).to.have.property('code');",
+                  "        pm.expect(category).to.have.property('name');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories",
+              "host": ["{{base_url}}"],
+              "path": ["categories"]
+            },
+            "description": "Retrieve all available categories"
+          },
+          "response": []
+        },
+        {
+          "name": "Create New Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains created category', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('code');",
+                  "    pm.expect(jsonData).to.have.property('name');",
+                  "    pm.expect(jsonData.code).to.equal(pm.environment.get('test_category_code'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"{{test_category_code}}\",\n  \"name\": \"Test Category\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/categories",
+              "host": ["{{base_url}}"],
+              "path": ["categories"]
+            },
+            "description": "Create a new category with the specified code and name"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Category - Missing Code (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error message indicates missing fields', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Category\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/categories",
+              "host": ["{{base_url}}"],
+              "path": ["categories"]
+            },
+            "description": "Test 400 error when creating category without required code field"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "product_code",
+      "value": "PROD001",
+      "type": "string"
+    },
+    {
+      "key": "test_category_code",
+      "value": "test-category",
+      "type": "string"
+    }
+  ]
+}
